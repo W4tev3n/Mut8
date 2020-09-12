@@ -1,3 +1,9 @@
+/Release
+/Debug
+/v1
+/Mut8/Debug
+/Mut8/Release
+
 # Prerequisites
 *.d
 
