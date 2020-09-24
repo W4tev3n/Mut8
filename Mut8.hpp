@@ -4,35 +4,36 @@
 #include <Windows.h>
 
 #ifdef _MSC_VER
-    #define _MUT8_FORCEINLINE __forceinline
-    #define _MUT8_ASM(...) __asm{ __VA_ARGS__ }
+#define MUT8_FORCEINLINE __forceinline
+#define MUT8_ASM(...) __asm{ __VA_ARGS__ }
 #endif
 
 #ifdef __GNUC__
-    #define _MUT8_FORCEINLINE __attribute__((always_inline))
-    #define _MUT8_ASM(...) asm(#__VA_ARGS__)
+#define MUT8_FORCEINLINE __attribute__((always_inline))
+#define MUT8_ASM(...) asm(#__VA_ARGS__)
 #endif
 
-#define _MUT8_CONSTEXPR constexpr
-#define _MUT8_TEMPLATE template
-#define _MUT8_SIZEOF sizeof
-#define _MUT8_STATIC static
-#define _MUT8_CONST const
-#define _MUT8_AUTO auto
+#define MUT8_CONSTEXPR constexpr
+#define MUT8_TEMPLATE template
+#define MUT8_SIZEOF sizeof
+#define MUT8_STATIC static
+#define MUT8_CONST const
+#define MUT8_AUTO auto
 
-#define _MUT8_VOID void
-#define _MUT8_BYTE unsigned char
-#define _MUT8_INT long
-#define _MUT8_UINT unsigned long
-#define _MUT8_UCSTR const unsigned char*
-#define _MUT8_CSTR const char*
-#define _MUT8_CHAR char
+#define MUT8_VOID void
+#define MUT8_BYTE unsigned char
+#define MUT8_INT long
+#define MUT8_UINT unsigned long
+#define MUT8_MAXSZINT unsigned long long
+#define MUT8_UCSTR const unsigned char*
+#define MUT8_CSTR const char*
+#define MUT8_CHAR char
 
-#define _MUT8_ALLOC(S, T) (new T[S])
-#define _MUT8_FREE(P) (delete P)
+#define MUT8_ALLOC(S, T) (new T[S])
+#define MUT8_FREE(P) (delete P)
 
 /* HASHING */
-_MUT8_STATIC _MUT8_CONSTEXPR _MUT8_CONST _MUT8_UINT _MUT8_CONST _MUT8_CRC32_TABLE[256] =
+MUT8_STATIC MUT8_CONSTEXPR MUT8_CONST MUT8_UINT MUT8_CONST MUT8_CRC32_TABLE[256] =
 {
     0x00000000L, 0x77073096L, 0xEE0E612CL, 0x990951BAL, 0x076DC419L, 0x706AF48FL, 0xE963A535L, 0x9E6495A3L,
     0x0EDB8832L, 0x79DCB8A4L, 0xE0D5E91EL, 0x97D2D988L, 0x09B64C2BL, 0x7EB17CBDL, 0xE7B82D07L, 0x90BF1D91L,
@@ -71,59 +72,59 @@ _MUT8_STATIC _MUT8_CONSTEXPR _MUT8_CONST _MUT8_UINT _MUT8_CONST _MUT8_CRC32_TABL
 /* GCC ONLY, IF USED ON MSVC WILL MAKE COMPILATION PROCESS INFINITE FOR SOME REASON. EVEN FOR RUNTIME(???). */
 #ifndef _MSC_VER
 
-_MUT8_TEMPLATE<_MUT8_UINT INDEX>
-_MUT8_CONSTEXPR _MUT8_FORCEINLINE _MUT8_UINT _MUT8_CRC32_IMPL(_MUT8_UCSTR STR)
+MUT8_TEMPLATE<MUT8_UINT INDEX>
+MUT8_CONSTEXPR MUT8_FORCEINLINE MUT8_UINT MUT8_CRC32_IMPL(MUT8_UCSTR STR)
 {
-    if _MUT8_CONSTEXPR(INDEX < 1)
+    if MUT8_CONSTEXPR(INDEX < 1)
     {
         return 0xFFFFFFFF;
     }
     else
     {
-        return (_MUT8_CRC32_IMPL<INDEX - 1>(STR) >> 8) ^ _MUT8_CRC32_TABLE[(_MUT8_CRC32_IMPL<INDEX - 1>(STR) ^ STR[INDEX]) & 0x000000FF];
+        return (MUT8_CRC32_IMPL<INDEX - 1>(STR) >> 8) ^ MUT8_CRC32_TABLE[(MUT8_CRC32_IMPL<INDEX - 1>(STR) ^ STR[INDEX]) & 0x000000FF];
     };
 }
-#define _MUT8_CRC32_HASH(V) (_MUT8_CRC32_IMPL<_MUT8_SIZEOF(V) - 1>((_MUT8_BYTE*)V) ^ 0xFFFFFFFF)
+#define MUT8_CRC32_HASH(V) (MUT8_CRC32_IMPL<MUT8_SIZEOF(V) - 1>((MUT8_BYTE*)V) ^ 0xFFFFFFFF)
 
 #endif
 
-_MUT8_TEMPLATE<_MUT8_UINT INDEX>
-_MUT8_CONSTEXPR _MUT8_FORCEINLINE _MUT8_UINT _MUT8_FNV1A_IMPL(_MUT8_UCSTR DATA)
+MUT8_TEMPLATE<MUT8_UINT INDEX>
+MUT8_CONSTEXPR MUT8_FORCEINLINE MUT8_UINT MUT8_FNV1A_IMPL(MUT8_UCSTR DATA)
 {
-    if _MUT8_CONSTEXPR(INDEX < 1)
+    if MUT8_CONSTEXPR(INDEX < 1)
     {
         return 2166136261u;
     }
     else
     {
-        return (_MUT8_FNV1A_IMPL<INDEX - 1>(DATA) ^ DATA[INDEX]) * 16777619u;
+        return (MUT8_FNV1A_IMPL<INDEX - 1>(DATA) ^ DATA[INDEX]) * 16777619u;
     };
 }
-#define _MUT8_FNV1A_HASH(V) _MUT8_FNV1A_IMPL<_MUT8_SIZEOF(V) - 1>((_MUT8_BYTE*)V)
+#define MUT8_FNV1A_HASH(V) MUT8_FNV1A_IMPL<MUT8_SIZEOF(V) - 1>((MUT8_BYTE*)V)
 
 #ifdef _MSC_VER
-#define _MUT8_HASH _MUT8_FNV1A_HASH
+#define MUT8_HASH MUT8_FNV1A_HASH
 #endif
 
 #ifdef __GNUC__
-#define _MUT8_HASH _MUT8_CRC32_HASH
+#define MUT8_HASH MUT8_CRC32_HASH
 #endif
 
 /* RUNTIME HASHING */
-_MUT8_UINT _MUT8_CRC32_RUNTIME(_MUT8_BYTE* DATA, _MUT8_UINT LEN)
+MUT8_UINT MUT8_CRC32_RUNTIME_IMPL(MUT8_BYTE* DATA, MUT8_UINT LEN)
 {
-    _MUT8_UINT HASH = 0xFFFFFFFF;
-    for (_MUT8_UINT I = 0; I < LEN; ++I)
+    MUT8_UINT HASH = 0xFFFFFFFF;
+    for (MUT8_UINT I = 0; I < LEN; ++I)
     {
-        HASH = _MUT8_CRC32_TABLE[(HASH ^ DATA[I]) & 0xFF] ^ (HASH >> 8);
+        HASH = MUT8_CRC32_TABLE[(HASH ^ DATA[I]) & 0xFF] ^ (HASH >> 8);
     }
     return HASH ^ 0xFFFFFFFF;
 }
 
-_MUT8_UINT _MUT8_FNV1A_RUNTIME(_MUT8_BYTE* DATA, _MUT8_UINT LEN)
+MUT8_UINT MUT8_FNV1A_RUNTIME_IMPL(MUT8_BYTE* DATA, MUT8_UINT LEN)
 {
-    _MUT8_UINT HASH = 2166136261u;
-    for (_MUT8_UINT I = 0; I < LEN; ++I)
+    MUT8_UINT HASH = 2166136261u;
+    for (MUT8_UINT I = 0; I < LEN; ++I)
     {
         HASH ^= *DATA++;
         HASH *= 16777619u;
@@ -131,9 +132,9 @@ _MUT8_UINT _MUT8_FNV1A_RUNTIME(_MUT8_BYTE* DATA, _MUT8_UINT LEN)
     return HASH;
 }
 
-_MUT8_UINT _MUT8_PJW_RUNTIME(_MUT8_BYTE* DATA)
+MUT8_CONSTEXPR MUT8_UINT MUT8_PJW_IMPL(MUT8_BYTE* DATA)
 {
-    _MUT8_UINT HASH = 0, HIGH = 0;
+    MUT8_UINT HASH = 0, HIGH = 0;
     while (*DATA)
     {
         HASH = (HASH << 4) + *DATA++;
@@ -144,60 +145,60 @@ _MUT8_UINT _MUT8_PJW_RUNTIME(_MUT8_BYTE* DATA)
     return HASH;
 }
 
-#define _MUT8_STR_HASH(V) _MUT8_PJW_RUNTIME((_MUT8_BYTE*)(V))
+#define MUT8_STR_HASH(V) MUT8_PJW_IMPL((MUT8_BYTE*)(V))
 
 #ifdef _MSC_VER
-#define _MUT8_RUNTIME_HASH _MUT8_FNV1A_RUNTIME
+#define MUT8_RUNTIME_HASH MUT8_FNV1A_RUNTIME_IMPL
 #endif
 
 #ifdef __GNUC__
-#define _MUT8_RUNTIME_HASH _MUT8_CRC32_RUNTIME
+#define MUT8_RUNTIME_HASH MUT8_CRC32_RUNTIME_IMPL
 #endif
 
 /* RNG */
-#define _MUT8_TSEED _MUT8_HASH(__TIMESTAMP__)
-#define _MUT8_SEED _MUT8_TSEED ^ 0xDEADBEEF
+#define MUT8_TSEED (MUT8_MAXSZINT)MUT8_HASH(__TIMESTAMP__)
+#define MUT8_SEED (MUT8_TSEED >> 16) ^ 0xAB4D1D3A | (MUT8_TSEED << (MUT8_SIZEOF(MUT8_MAXSZINT) * 8 - 16)) ^ 0xDEADBEEF
 
-_MUT8_TEMPLATE<_MUT8_UINT T>
-_MUT8_CONSTEXPR _MUT8_FORCEINLINE _MUT8_UINT _MUT8_LCG_IMPL(_MUT8_UINT X) {
-    if _MUT8_CONSTEXPR(T < 1)
+MUT8_TEMPLATE<MUT8_UINT T>
+MUT8_CONST MUT8_CONSTEXPR MUT8_FORCEINLINE MUT8_UINT MUT8_LCG_IMPL(MUT8_UINT X) {
+    if MUT8_CONSTEXPR(T < 1)
     {
         return X;
     }
     else
     {
-        return (0x41C64E6DL * _MUT8_LCG_IMPL<T - 1>(X) + 12345) % 0x80000000L;
+        return (0x41C64E6DL * MUT8_LCG_IMPL<T - 1>(X) + 12345) % 0x80000000L;
     }
 }
-#define _MUT8_LCG_RAND _MUT8_LCG_IMPL<__COUNTER__>(_MUT8_SEED)
+#define MUT8_LCG_RAND MUT8_LCG_IMPL<__COUNTER__>(MUT8_SEED)
 
-_MUT8_TEMPLATE<_MUT8_UINT T>
-_MUT8_CONSTEXPR _MUT8_FORCEINLINE _MUT8_UINT _MUT8_XORSHIFT32_IMPL(_MUT8_UINT X)
+MUT8_TEMPLATE<MUT8_UINT T>
+MUT8_CONST MUT8_CONSTEXPR MUT8_FORCEINLINE MUT8_UINT MUT8_XORSHIFT32_IMPL(MUT8_UINT X)
 {
     X ^= X << 13;
     X ^= X >> 17;
     X ^= X << 5;
 
-    if _MUT8_CONSTEXPR(T < 1)
+    if MUT8_CONSTEXPR(T < 1)
     {
         return X;
     }
-    else 
+    else
     {
-        return _MUT8_XORSHIFT32_IMPL<T - 1>(X);
-    }    
+        return MUT8_XORSHIFT32_IMPL<T - 1>(X);
+    }
 };
-#define _MUT8_XS32_RAND _MUT8_XORSHIFT32_IMPL<__COUNTER__>(_MUT8_SEED)
+#define MUT8_XS32_RAND MUT8_XORSHIFT32_IMPL<__COUNTER__>(MUT8_SEED)
 
-#define _MUT8_RAND _MUT8_LCG_RAND
+#define MUT8_RAND MUT8_LCG_RAND
 
-/* PSEUDO-ENCRYPTION */
-_MUT8_TEMPLATE<_MUT8_UINT SEED = 0>
-_MUT8_BYTE* _MUT8_FASTCRYPT(_MUT8_BYTE* DATA, _MUT8_UINT LEN)
+/* FAST PSEUDO-ENCRYPTION */
+MUT8_TEMPLATE<MUT8_UINT SEED = 0>
+MUT8_BYTE* MUT8_FASTCRYPT(MUT8_BYTE* DATA, MUT8_UINT LEN)
 {
-    _MUT8_UINT X = SEED;
-    _MUT8_BYTE* ENCRYPTED = _MUT8_ALLOC(LEN, _MUT8_BYTE);
-    for (_MUT8_UINT I = 0; I < LEN; ++I)
+    MUT8_UINT X = SEED;
+    MUT8_BYTE* ENCRYPTED = MUT8_ALLOC(LEN, MUT8_BYTE);
+    for (MUT8_UINT I = 0; I < LEN; ++I)
     {
         X ^= X << 13;
         X ^= X >> 17;
@@ -208,185 +209,73 @@ _MUT8_BYTE* _MUT8_FASTCRYPT(_MUT8_BYTE* DATA, _MUT8_UINT LEN)
     return ENCRYPTED;
 };
 
-/* HWID */
-/* THIS IS NOT REALLY A PART OF THIS LIBRARY, BUT I DECIDED TO PUT IT HERE ANYWAY. */
-/* VARIOUS SOURCES, TOO LAZY TO FIND AND LINK ALL OF THEM. */
-#ifdef _MUT8_HWID
-
-_MUT8_FORCEINLINE _MUT8_UINT _MUT8_CPUID()
-{
-    _MUT8_INT _MUT8_CPUID_DATA[36] = { 0 };
-
-    /* PRESERVE ORIGINAL DATA IN REGISTERS */
-    _MUT8_ASM(push ebx);
-    _MUT8_ASM(push edx);
-    _MUT8_ASM(push ecx);
-
-    /* VENDOR */
-    _MUT8_ASM(mov eax, 0);
-    _MUT8_ASM(cpuid);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[0], ebx);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[1], edx);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[2], ecx);
-
-    /* PROCESSOR FEATURES */
-    _MUT8_ASM(mov eax, 1);
-    _MUT8_ASM(cpuid);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[3], ebx);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[4], edx);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[5], ecx);
-
-    /* SERIAL NUMBER */
-    _MUT8_ASM(mov eax, 3);
-    _MUT8_ASM(cpuid);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[6], ebx);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[7], edx);
-    _MUT8_ASM(mov _MUT8_CPUID_DATA[8], ecx);
-
-    /* RESTORE DATA */
-    _MUT8_ASM(pop edx);
-    _MUT8_ASM(pop ecx);
-    _MUT8_ASM(pop ebx);
-
-    /* HASH COLLECTED DATA */
-    return _MUT8_RUNTIME_HASH((_MUT8_BYTE*)_MUT8_CPUID_DATA, 36);
-};
-
-_MUT8_FORCEINLINE _MUT8_UINT _MUT8_HDDID(_MUT8_CSTR HDD)
-{
-    BYTE BUFFER[0x1000];
-
-    STORAGE_DEVICE_DESCRIPTOR* DESCRIPTOR = (STORAGE_DEVICE_DESCRIPTOR*)BUFFER;
-    STORAGE_PROPERTY_QUERY P = { StorageDeviceProperty, PropertyStandardQuery };
-    DWORD RETN;
-
-    _MUT8_UINT _MUT8_HDDID = 0;
-
-    HANDLE hDisk = CreateFile(LPCSTR(HDD) /* "\\\\.\\PhysicalDriveN" */, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-
-    if (hDisk == INVALID_HANDLE_VALUE) 
-        return -1;
-
-    if (DeviceIoControl(hDisk, IOCTL_STORAGE_QUERY_PROPERTY, &P, sizeof(P), BUFFER, sizeof(BUFFER), &RETN, 0) == false)
-        return -1;
-
-    if (DESCRIPTOR->VendorIdOffset > 0)
-        _MUT8_HDDID ^= _MUT8_STR_HASH(BUFFER + DESCRIPTOR->VendorIdOffset);
-
-    if (DESCRIPTOR->ProductIdOffset > 0)
-        _MUT8_HDDID ^= _MUT8_STR_HASH(BUFFER + DESCRIPTOR->ProductIdOffset);
-
-    if (DESCRIPTOR->ProductRevisionOffset > 0)
-        _MUT8_HDDID ^= _MUT8_STR_HASH(BUFFER + DESCRIPTOR->ProductRevisionOffset);
-
-    if (DESCRIPTOR->SerialNumberOffset > 0)
-        _MUT8_HDDID ^= _MUT8_STR_HASH(BUFFER + DESCRIPTOR->SerialNumberOffset);
-
-    CloseHandle(hDisk);
-
-    return _MUT8_HDDID;
-};
-
-#include <D3D9.h>
-#pragma comment (lib, "d3d9.lib")
-_MUT8_FORCEINLINE _MUT8_UINT _MUT8_VIDEOID()
-{
-    IDirect3D9* D3D9Object = Direct3DCreate9(D3D_SDK_VERSION);
-    D3DPRESENT_PARAMETERS D3D9Present = { 0 };
-    D3D9Present.Windowed = TRUE;
-    D3D9Present.SwapEffect = D3DSWAPEFFECT_DISCARD;
-    UINT AdapterCount = D3D9Object->GetAdapterCount();
-    D3DADAPTER_IDENTIFIER9* Adapters = _MUT8_ALLOC(AdapterCount, D3DADAPTER_IDENTIFIER9);
-
-    for (_MUT8_UINT I = 0; I < AdapterCount; I++)
-    {
-        D3D9Object->GetAdapterIdentifier(I, 0, &(Adapters[I]));
-    }
-
-    return _MUT8_STR_HASH(Adapters->Description);
-}
-
-#include <Iphlpapi.h>
-#pragma comment(lib, "iphlpapi.lib")
-_MUT8_FORCEINLINE _MUT8_UINT _MUT8_MACID()
-{
-    IP_ADAPTER_INFO AdapterInfo[16];
-    DWORD dwBufLen = sizeof(AdapterInfo);
-    _MUT8_UINT _MUT8_MACID = 0;
-
-    DWORD dwStatus = GetAdaptersInfo(
-        AdapterInfo,
-        &dwBufLen);
-
-    if (dwStatus != ERROR_SUCCESS)
-        return -1;
-
-    PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
-    do 
-    {
-        _MUT8_MACID ^= _MUT8_RUNTIME_HASH((_MUT8_BYTE*)pAdapterInfo->Address, 8);
-        pAdapterInfo = pAdapterInfo->Next;
-    } while (pAdapterInfo);
-
-    return _MUT8_MACID;
-}
-
-#endif
-
 /* STRING CRYPTOR */
 /* SOURCE: https://github.com/urShadow/StringObfuscator */
 
-_MUT8_TEMPLATE<_MUT8_UINT INDEX>
-struct _MUT8_ENCRYPTOR 
+MUT8_TEMPLATE<MUT8_UINT INDEX>
+struct MUT8_ENCRYPTOR
 {
-    _MUT8_FORCEINLINE _MUT8_STATIC _MUT8_CONSTEXPR _MUT8_VOID _MUT8_ENCRYPT_STR(_MUT8_CHAR* DEST, _MUT8_CONST _MUT8_CHAR* STR, _MUT8_CHAR KEY)
+    MUT8_FORCEINLINE MUT8_STATIC MUT8_CONSTEXPR MUT8_VOID MUT8_ENCRYPT_STR(MUT8_CHAR* DEST, MUT8_CONST MUT8_CHAR* STR, MUT8_CHAR KEY)
     {
         DEST[INDEX] = STR[INDEX] ^ KEY;
-        _MUT8_ENCRYPTOR<INDEX - 1>::_MUT8_ENCRYPT_STR(DEST, STR, KEY);
+        MUT8_ENCRYPTOR<INDEX - 1>::MUT8_ENCRYPT_STR(DEST, STR, KEY);
     }
 };
 
-_MUT8_TEMPLATE<>
-struct _MUT8_ENCRYPTOR<0> 
+MUT8_TEMPLATE<>
+struct MUT8_ENCRYPTOR<0>
 {
-    _MUT8_FORCEINLINE _MUT8_STATIC _MUT8_CONSTEXPR _MUT8_VOID _MUT8_ENCRYPT_STR(_MUT8_CHAR* DEST, _MUT8_CONST _MUT8_CHAR* STR, _MUT8_CHAR KEY) 
+    MUT8_FORCEINLINE MUT8_STATIC MUT8_CONSTEXPR MUT8_VOID MUT8_ENCRYPT_STR(MUT8_CHAR* DEST, MUT8_CONST MUT8_CHAR* STR, MUT8_CHAR KEY)
     {
         DEST[0] = STR[0] ^ KEY;
     }
 };
 
-_MUT8_TEMPLATE<_MUT8_UINT S>
-class _MUT8_STR_CRYPTOR 
+MUT8_TEMPLATE<MUT8_UINT S>
+class MUT8_STR_CRYPTOR
 {
 public:
-    constexpr _MUT8_STR_CRYPTOR(_MUT8_CONST _MUT8_CHAR STR[S], _MUT8_UINT KEY) : _MUT8_BUFFER{}, _MUT8_DECRYPTED{ false }, _MUT8_KEY
-    { 
-        static_cast<_MUT8_CONST _MUT8_CHAR>(KEY % 255) 
-    } 
+    constexpr MUT8_STR_CRYPTOR(MUT8_CONST MUT8_CHAR STR[S], MUT8_UINT KEY) : MUT8_BUFFER{}, MUT8_DECRYPTED{ false }, MUT8_KEY
     {
-        _MUT8_ENCRYPTOR<S - 1>::_MUT8_ENCRYPT_STR(_MUT8_BUFFER, STR, _MUT8_KEY);
+        static_cast<MUT8_CONST MUT8_CHAR>(KEY % 255)
+    }
+    {
+        MUT8_ENCRYPTOR<S - 1>::MUT8_ENCRYPT_STR(MUT8_BUFFER, STR, MUT8_KEY);
     }
 
-    _MUT8_CONST _MUT8_CHAR* _MUT8_DECRYPT_STR() const 
+    MUT8_CONST MUT8_CHAR* MUT8_DECRYPT_STR() const
     {
-        if (_MUT8_DECRYPTED) {
-            return _MUT8_BUFFER;
+        if (MUT8_DECRYPTED) {
+            return MUT8_BUFFER;
         }
-        for (_MUT8_AUTO& C : _MUT8_BUFFER) {
-            C ^= _MUT8_KEY;
+        for (MUT8_AUTO& C : MUT8_BUFFER) {
+            C ^= MUT8_KEY;
         }
-        _MUT8_DECRYPTED = true;
-        return _MUT8_BUFFER;
+        MUT8_DECRYPTED = true;
+        return MUT8_BUFFER;
     }
 private:
-    mutable char _MUT8_BUFFER[S];
-    mutable bool _MUT8_DECRYPTED;
-    const char _MUT8_KEY;
+    mutable char MUT8_BUFFER[S];
+    mutable bool MUT8_DECRYPTED;
+    const char MUT8_KEY;
 };
 
-_MUT8_TEMPLATE <_MUT8_UINT S>
-_MUT8_STATIC _MUT8_CONSTEXPR _MUT8_AUTO _MUT8_CREATE_CRYPTED_STR(_MUT8_CONST _MUT8_CHAR(&STR)[S]) 
+MUT8_TEMPLATE <MUT8_UINT S>
+MUT8_STATIC MUT8_CONSTEXPR MUT8_AUTO MUT8_CREATE_CRYPTED_STR(MUT8_CONST MUT8_CHAR(&STR)[S])
 {
-    return _MUT8_STR_CRYPTOR<S>{ STR, S };
+    return MUT8_STR_CRYPTOR<S>{ STR, S };
 }
-#define _MUT8_CRYPT_STR(X) _MUT8_CREATE_CRYPTED_STR(X)._MUT8_DECRYPT_STR()
+#define MUT8_CRYPT_STR(X) MUT8_CREATE_CRYPTED_STR(X).MUT8_DECRYPT_STR()
+
+/* ATOI */
+MUT8_FORCEINLINE MUT8_CONST MUT8_MAXSZINT MUT8_ATOI_IMPL(MUT8_CSTR X)
+{
+    MUT8_MAXSZINT RES = 0;
+    for (MUT8_MAXSZINT I = 0; X[I] != '\0'; ++I)
+        RES = RES * 10 + X[I] - '0';
+    return RES;
+}
+#define MUT8_ATOI(X) MUT8_ATOI_IMPL((MUT8_CSTR)X)
+
+/* INTEGER CRYPTOR */
+#define MUT8_CRYPT_DECINTLITERAL(V) MUT8_ATOI(MUT8_CRYPT_STR(#V))
